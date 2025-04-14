@@ -26,10 +26,10 @@ public class EditorOnlyToggle
     {
         var obj = EditorUtility.InstanceIDToObject(instanceID) as GameObject;
         if (obj == null) return;
-        
+
         // UntaggedかEditorOnlyの場合のみボタンを表示
         if (obj.tag != "Untagged" && obj.tag != "EditorOnly") return;
-        
+
         // Ctrlキーが押されている場合のみボタンを表示
         if (!Event.current.control) return;
         var leftMargin = 0;
@@ -40,7 +40,7 @@ public class EditorOnlyToggle
         toggleRect.x = selectionRect.xMax - rightMargin; // 階層に関係なく右端から固定位置に配置
         // toggleRect.x = leftMargin + buttonWidth; // 階層に関係なく右端から固定位置に配置
         toggleRect.width = buttonWidth;
-        
+
         // Enable/Disableトグル用のRect
         var enableToggleRect = new Rect(selectionRect);
         enableToggleRect.x = selectionRect.xMax - rightMargin - buttonWidth; // 階層に関係なく右端から固定位置に配置
@@ -51,7 +51,7 @@ public class EditorOnlyToggle
 
         // 元の色を保存
         var originalColor = GUI.color;
-        
+
         // アイコンの色を設定（EditorOnlyの場合は明るく、そうでない場合は暗く）
         GUI.color = editorOnly ? Color.white : new Color(0.5f, 0.5f, 0.5f, 1f);
 
@@ -64,12 +64,13 @@ public class EditorOnlyToggle
         // 状態が変更された場合はタグを更新
         if (newEditorOnly != editorOnly)
         {
+            Undo.RecordObject(obj, "Toggle EditorOnly Tag");
             obj.tag = newEditorOnly ? "EditorOnly" : "Untagged";
         }
-        
+
         // Enable/Disableトグルの表示
         var isEnabled = obj.activeSelf;
-        
+
         // 状態に応じたアイコンを選択（アイコンは状態によって変わるが色は統一）
         var iconToUse = isEnabled ? enableIconContent : disableIconContent;
 
@@ -78,13 +79,14 @@ public class EditorOnlyToggle
         GUI.color = isEnabled ? Color.white : new Color(0.5f, 0.5f, 0.5f, 1f);
         // ボタンとしてEnable/Disableアイコンを表示
         var newIsEnabled = GUI.Toggle(enableToggleRect, isEnabled, iconToUse, GUI.skin.button);
-        
+
         // 色を元に戻す（念のため）
         GUI.color = originalColor;
-        
+
         // 状態が変更された場合はGameObjectのアクティブ状態を更新
         if (newIsEnabled != isEnabled)
         {
+            Undo.RecordObject(obj, "Toggle Object Active");
             obj.SetActive(newIsEnabled);
         }
     }
